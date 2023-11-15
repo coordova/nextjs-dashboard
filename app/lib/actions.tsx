@@ -31,9 +31,9 @@ export async function createInvoice(formData: FormData) {
         VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
     `;
 
-	// revalidar y redirigir
+	// revalidar
 	revalidatePath("/dashboard/invoices");
-	// redirigir
+	//  y redirigir
 	redirect("/dashboard/invoices");
 
 	/* const rawFormData = {
@@ -48,4 +48,35 @@ export async function createInvoice(formData: FormData) {
 	// probamos
 	// console.log(rawFormData);
 	// console.log(typeof rawFormData.amount);
+}
+
+// Use Zod to update the expected types
+const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+
+// ...
+
+export async function updateInvoice(id: string, formData: FormData) {
+	const { customerId, amount, status } = UpdateInvoice.parse({
+		customerId: formData.get("customerId"),
+		amount: formData.get("amount"),
+		status: formData.get("status"),
+	});
+
+	const amountInCents = amount * 100;
+
+	await sql`
+    UPDATE invoices
+    SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+    WHERE id = ${id}
+  `;
+
+	// Llamar revalidatePathpara borrar el caché del cliente y realizar una nueva solicitud al servidor.
+	revalidatePath("/dashboard/invoices");
+	// Llamando redirectpara redirigir al usuario a la página de la factura.
+	redirect("/dashboard/invoices");
+}
+
+export async function deleteInvoice(id: string) {
+	await sql`DELETE FROM invoices WHERE id = ${id}`;
+	revalidatePath("/dashboard/invoices");
 }
