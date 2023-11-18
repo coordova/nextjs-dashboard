@@ -1,6 +1,7 @@
 import Form from "@/app/ui/invoices/edit-form";
 import Breadcrumbs from "@/app/ui/invoices/breadcrumbs";
 import { fetchInvoiceById, fetchCustomers } from "@/app/lib/data";
+import { notFound } from "next/navigation";
 
 // Además de searchParams, los componentes de la página también aceptan un accesorio llamado params que se puede utilizar para acceder al 'id' de la factura.
 export default async function Page({ params }: { params: { id: string } }) {
@@ -15,6 +16,10 @@ export default async function Page({ params }: { params: { id: string } }) {
 	]);
 
 	// console.log(invoice);
+
+	if (!invoice) {
+		notFound();
+	}
 
 	return (
 		<main>
